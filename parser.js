@@ -1,38 +1,54 @@
-const fs = require('fs');
+module.exports = class Parser {
 
-let text = fs.readFileSync('raw.txt').toString();
-let packages = text.split(/\r\n\r\n|\r\r|\n\n/);
-let finalList = new Map();
+    constructor (text) {
+        this.initial = text;
+        this.result = new Map();
+    }
 
-packages.forEach(package => {
-    let chunks = package
-    .replace(/\r\n\s/g, ' ')
-    .replace(/:\s/g, ':')
-    .split(/\r\n|:/);
+    __parseTextToPackages(text) {
+        return text.split(/\r\n\r\n|\n\n/);
+    }
     
-    let packageObj = chunks.reduce((acc, cur, idx, src) => {
-        if (cur == 'Package' || cur == 'Description') {
-            acc[cur.toLowerCase()] = src[idx + 1];
-            
-        } else if (cur == 'Depends') {
-            let depends = new Set(
-                src[idx + 1]
-                .replace(/\s\((.*?)\)/g, '')
-                .split(/,\s/)
-            );
-            depends.forEach(el => {
-                if (!finalList.has(el)) {
-                    finalList.set(el, {reversDep: acc['package']})
-                }
-            });
-            acc[cur.toLowerCase()] = depends;   
+    __parsePackageToFields(pack) {
+        return pack.replace(/\r\n\s/g, ' ').split(/\r\n/);
+    }
+    
+    __parseFieldsToKeyValue(field) {
+        let breakPoint = field.indexOf(':');
+        let fieldObject = {};
+        let key = field.substring(0, breakPoint);
+        let value = field.substring(breakPoint + 2);
+        if (key == 'Package' || key == 'Depends' || key == 'Description') {
+            fieldObject[key] = value;
         }
-        return acc;
-    }, {});
-    finalList.set(packageObj.package, {...packageObj});  
-})
+        return fieldObject;
+    }
+    
+    __parseDepends(d, packageName) {
+        let depends = new Set(d.replace(/\s\((.*?)\)/g, '').split(/,\s/));
+        depends.forEach(el => {
+            if (!this.result.has(el)) {
+                this.result.set(el, {reversDep: packageName})
+            }
+        })
+        return depends;
+    };
+    
+    parse() { 
+        this.__parseTextToPackages(this.initial).forEach(p => {
+            let pack = {};
+            this.__parsePackageToFields(p).forEach(field => {
+                let f = this.__parseFieldsToKeyValue(field);
+                pack = {...pack, ...f};
+            });
+            let d = this.__parseDepends(pack.Depends, pack.Package);
+            pack.Depends = d;
+            this.result.set(pack.Package, {...pack})
+        })
+        return this.result;
+    }
 
-console.dir(finalList);
+}
 
 
 
