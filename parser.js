@@ -18,13 +18,17 @@ function parseFieldsToKeyValue(field) {
     let key = field.substring(0, breakPoint);
     let value = field.substring(breakPoint + 2);
     if (key == 'Package' || key == 'Depends' || key == 'Description') {
-        fieldObject[key] = value;
+        fieldObject[key.toLowerCase()] = value;
     }
     return fieldObject;
 }
     
-function parseDeps(dep, packageName) {
+function parseDeps(dep) {
     let deps = new Set(dep.replace(/\s\((.*?)\)/g, '').split(/,\s/));
+    return deps;
+};
+
+function setReverseDeps(deps, packageName) {
     deps.forEach(elem => {
         if(!result.has(elem)) {
             result.set(elem, {reverseDep: new Set().add(packageName)})
@@ -32,8 +36,7 @@ function parseDeps(dep, packageName) {
             result.elem.reverseDep.add(packageName) // fix
         }    
     })
-    return deps;
-};
+}
     
 function parse(text) { 
     parseTextToPackages(text).forEach(package => {
@@ -42,10 +45,11 @@ function parse(text) {
             let f = parseFieldsToKeyValue(field);
             pack = {...pack, ...f};
         });
-        let deps = parseDeps(pack.Depends, pack.Package);
-        pack.Depends = deps;
+        let deps = parseDeps(pack.depends);
+        setReverseDeps(deps, pack.package);
+        pack.depends = deps;
         pack.reverseDep = new Set();
-        result.set(pack.Package, {...pack})
+        result.set(pack.package, {...pack})
     })
 }
 
