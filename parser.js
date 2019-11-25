@@ -1,6 +1,7 @@
 const fs = require('fs');
 
-const emptyLine = /\r\n\r\n|\n\n/;
+// const emptyLine = /\r\n\r\n|\n\n/;
+const emptyLine = /\n\n/;
 
 function parse_keyval(s) {
     let idx = s.indexOf(':'); 
