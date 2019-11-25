@@ -1,62 +1,56 @@
 const fs = require('fs');
 
-let text = fs.readFileSync('raw.txt').toString();
+const emptyLine = /\r\n\r\n|\n\n/;
 
-let result = new Map();
+function parse_keyval(s) {
+    let idx = s.indexOf(':'); 
+    return [s.substring(0, idx), s.substring(idx + 2)] 
+}
 
-function parseTextToPackages(text) {
-    return text.split(/\r\n\r\n|\n\n/);
+function parse_deps(s) {
+    return s.split(', ').map(s => s.split('| ').map(s => { 
+        let i = s.indexOf(' '); 
+        return (i > 0) ? s.substring(0, i) : s
+    }))
 }
-    
-function parsePackageToFields(package) {
-    return package.replace(/\r\n\s/g, ' ').split(/\r\n/);
-}
-    
-function parseFieldsToKeyValue(field) {
-    let breakPoint = field.indexOf(':');
-    let fieldObject = {};
-    let key = field.substring(0, breakPoint);
-    let value = field.substring(breakPoint + 2);
-    if (key == 'Package' || key == 'Depends' || key == 'Description') {
-        fieldObject[key.toLowerCase()] = value;
-    }
-    return fieldObject;
-}
-    
-function parseDeps(dep) {
-    let deps = new Set(dep.replace(/\s\((.*?)\)/g, '').split(/,\s/));
-    return deps;
-};
 
-function setReverseDeps(deps, packageName) {
-    deps.forEach(elem => {
-        if(!result.has(elem)) {
-            result.set(elem, {reverseDep: new Set().add(packageName)})
-        } else {
-            result.elem.reverseDep.add(packageName) // fix
-        }    
+function parse_desc(s) {
+    return s.replace(/\r\n/g, ''); 
+}
+
+function parse_pack(s) {
+    return s.split(/\r\n(?=\S)/).map(l => parse_keyval(l))
+        .reduce((acc, val) => {
+            switch (val[0]) {
+                case 'Package': 
+                    acc.name = val[1]; 
+                    break;
+                case 'Description': 
+                    acc.desc = parse_desc(val[1]); 
+                    break;
+                case 'Depends':
+                    acc.deps = parse_deps(val[1]);
+                    break;
+            }
+
+            return acc;
+        }, { deps: [], revs: [] });
+}
+
+function parse(fileName) {
+    let map = fs.readFileSync(fileName, 'utf-8').split(emptyLine).filter(s => s.length > 0)
+        .map(s => parse_pack(s)).reduce((acc, val) => acc.set(val.name, val), new Map());
+
+    map.forEach(pack => {
+        pack.deps.flatMap(deps => deps).forEach(dep => {
+            if (map.has(dep)) {
+                map.get(dep).revs.push(pack.name);
+            }
+        })
     })
-}
-    
-function parse(text) { 
-    parseTextToPackages(text).forEach(package => {
-        let pack = {};
-        parsePackageToFields(package).forEach(field => {
-            let f = parseFieldsToKeyValue(field);
-            pack = {...pack, ...f};
-        });
-        let deps = parseDeps(pack.depends);
-        setReverseDeps(deps, pack.package);
-        pack.depends = deps;
-        pack.reverseDep = new Set();
-        result.set(pack.package, {...pack})
-    })
+    return map;
 }
 
-
-parse(text);
-console.log(result)
-
-
-
-
+module.exports = {
+    parse
+}
