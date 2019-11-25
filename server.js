@@ -1,13 +1,13 @@
 const http = require('http');
 const { parse } = require('./parser');
-const { renderContent, renderMenu } = require('./render');
+const { renderResponse } = require('./render');
 
 const port = process.env.PORT || 3000;
 const host = process.env.HOST || '127.0.0.1';
 
 let pkgs = parse('raw.txt');
 
-let response = renderMenu(pkgs) + renderContent(pkgs);
+let response = renderResponse(pkgs);
 
 const server = http.createServer((req, res) => {
     res.writeHead(200, {"Content-Type": "text/html; charset=utf-8"});
