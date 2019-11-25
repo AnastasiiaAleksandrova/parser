@@ -5,7 +5,11 @@ const { renderResponse } = require('./render');
 const port = process.env.PORT || 3000;
 const file = '/var/lib/dpkg/status';
 
+console.log(file);
+
 let pkgs = parse(file);
+
+
 
 let response = renderResponse(pkgs);
 
