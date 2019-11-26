@@ -3,23 +3,25 @@ const { parse } = require('./parser');
 const { renderResponse } = require('./render');
 
 const port = process.env.PORT || 3000;
-// const file = 'raw.txt';
 
+const mock = 'raw.txt';
 const file = '/var/lib/dpkg/status';
 
 
-
-let pkgs = parse(file);
-
-//console.log(pkgs);
-
-
-
-let response = renderResponse(pkgs);
+function createRes() {
+    let res;
+    try {
+        res = renderResponse(parse(file));
+    } catch (err) {
+        res = renderResponse(parse(mock));
+    } finally {
+        return res;
+    }
+}
 
 const server = http.createServer((req, res) => {
     res.writeHead(200, {"Content-Type": "text/html; charset=utf-8"});
-    res.write(response);
+    res.write(createRes());
     res.end();
 });
 
