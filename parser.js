@@ -1,7 +1,8 @@
 const fs = require('fs');
 
 // const emptyLine = /\r\n\r\n|\n\n/;
-const emptyLine = /\n\n/;
+// const newLine = /\r\n|\n/;
+
 
 function parse_keyval(s) {
     let idx = s.indexOf(':'); 
@@ -16,11 +17,11 @@ function parse_deps(s) {
 }
 
 function parse_desc(s) {
-    return s.replace(/\r\n/g, ''); 
+    return s.replace(/\r\n|\n/g, ''); 
 }
 
 function parse_pack(s) {
-    return s.split(/\r\n(?=\S)/).map(l => parse_keyval(l))
+    return s.split(/\r\n|\n(?=\S)/).map(l => parse_keyval(l))
         .reduce((acc, val) => {
             switch (val[0]) {
                 case 'Package': 
@@ -39,7 +40,7 @@ function parse_pack(s) {
 }
 
 function parse(fileName) {
-    let map = fs.readFileSync(fileName, 'utf-8').split(emptyLine).filter(s => s.length > 0)
+    let map = fs.readFileSync(fileName, 'utf-8').split(/\r\n\r\n|\n\n/).filter(s => s.length > 0)
         .map(s => parse_pack(s)).reduce((acc, val) => acc.set(val.name, val), new Map());
 
     map.forEach(pack => {
@@ -51,6 +52,8 @@ function parse(fileName) {
     })
     return map;
 }
+
+console.log(fs.readFileSync('raw.txt').toString())
 
 module.exports = {
     parse

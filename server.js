@@ -9,7 +9,7 @@ const file = 'raw.txt';
 
 let pkgs = parse(file);
 
-console.log(pkgs);
+//console.log(pkgs);
 
 
 
