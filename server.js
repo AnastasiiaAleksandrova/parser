@@ -3,7 +3,9 @@ const { parse } = require('./parser');
 const { renderResponse } = require('./render');
 
 const port = process.env.PORT || 3000;
-const file = 'raw.txt';
+// const file = 'raw.txt';
+
+const file = '/var/lib/dpkg/status';
 
 
 

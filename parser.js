@@ -53,7 +53,7 @@ function parse(fileName) {
     return map;
 }
 
-console.log(fs.readFileSync('raw.txt').toString())
+
 
 module.exports = {
     parse
