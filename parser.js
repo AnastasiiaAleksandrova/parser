@@ -1,8 +1,5 @@
 const fs = require('fs');
 
-// const emptyLine = /\r\n\r\n|\n\n/;
-// const newLine = /\r\n|\n/;
-
 
 function parse_keyval(s) {
     let idx = s.indexOf(':'); 
@@ -52,7 +49,6 @@ function parse(fileName) {
     })
     return map;
 }
-
 
 
 module.exports = {

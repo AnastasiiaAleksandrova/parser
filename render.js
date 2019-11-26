@@ -26,11 +26,6 @@ const html = {
     ul(text) {
         return `<ul>${text}</ul>`;
     }
-
-    // div(text, style) {
-    //     return `<div style=\'${style}\'>${text}</div>`;
-    // }
-
 };
 
 function renderMenu(map) {
@@ -40,7 +35,6 @@ function renderMenu(map) {
        return acc.concat(html.li(html.a(`#${cur}`, cur)));
     }, ''));
 
-    // return html.div('overflow-y: scroll; flex: 1; heigth: 100%; position: relative', menu)
     return `<div style=\'overflow-y: scroll; flex: 1; heigth: 100%; position: relative\'>${menu}</div>`;   
 }
 
@@ -85,15 +79,12 @@ function renderContent(map) {
         content = content.concat(name + desc + deps + revs); 
     })
 
-    // return html.div('overflow-y: scroll; flex: 3; heigth: 100%; position: relative; padding: 10px', content)
     return `<div style=\'overflow-y: scroll; flex: 3; heigth: 100%; position: relative; padding: 10px\'>${content}</div>`;
 }
 
-
 function renderResponse(map) {
     let response = renderMenu(map) + renderContent(map);
-    // return html.div('display: flex; height: 100%; width: 100%', response)
-    return `<div style=\'display: flex; height: 100%; width: 100%\'>${renderMenu(map) + renderContent(map)}</div>`
+    return `<div style=\'display: flex; height: 100%; width: 100%\'>${response}</div>`
 }
 
 module.exports = {
